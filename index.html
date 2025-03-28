@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Tracking</title>
+    <style>
+        
+        /* Your CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://t4.ftcdn.net/jpg/02/43/11/85/360_F_243118595_69w58kvRFGA6rqKaFCBnbaY9o8bSiWPe.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #locationDisplay {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        #locationDisplay p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        #locationDisplay span {
+            font-weight: bold;
+            color: #333;
+        }
+
+        #locationForm,
+        #userDetailsForm {
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>GPS Tracking</h1>
+        <div id="locationDisplay">
+            <p>Latitude: <span id="latitude"></span></p>
+            <p>Longitude: <span id="longitude"></span></p>
+        </div>
+        <form id="locationForm" action="submit_location.php" method="post"> <!-- Use POST method -->
+            <input type="hidden" id="latitudeInput" name="latitude">
+            <input type="hidden" id="longitudeInput" name="longitude">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username">
+            <button type="button" onclick="submitLocation()">Submit</button> <!-- Change type to button -->
+        </form>
+        <button onclick="showMap()">Show Map</button>
+        <button onclick="showUserDetails()">User Details</button>
+    </div>
+    <div id="map"></div>
+    <script>
+        // Function to get user's current location
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Function to display user's latitude and longitude
+        function showPosition(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            document.getElementById("latitude").textContent = latitude;
+            document.getElementById("longitude").textContent = longitude;
+            document.getElementById("latitudeInput").value = latitude;
+            document.getElementById("longitudeInput").value = longitude;
+        }
+
+        // Call the getLocation function when the page loads
+        window.onload = getLocation;
+
+        // Function to submit location data using AJAX
+        function submitLocation() {
+            var formData = new FormData(document.getElementById("locationForm"));
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "submit_location.php", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        alert(xhr.responseText); // Success message
+                    } else {
+                        alert("Error: " + xhr.status); // Error message
+                    }
+                }
+            };
+            xhr.send(formData);
+        }
+
+        // Function to display the map on a new page
+        function showMap() {
+            var latitude = document.getElementById("latitudeInput").value;
+            var longitude = document.getElementById("longitudeInput").value;
+            // Open map on a new page
+            window.open('https://maps.google.com/maps?q=' + latitude + ',' + longitude + '&z=15', '_blank');
+        }
+        
+        // Function to show user details
+        function showUserDetails() {
+            // Open a new page
+            var userDetailsPage = window.open("userdetails.php");
+
+            // Fetch user details using AJAX
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        // Display user details on the new page
+                        userDetailsPage.document.write(xhr.responseText);
+                    } else {
+                        userDetailsPage.document.write("<p>Error fetching user details.</p>");
+                    }
+                }
+            };
+            xhr.open("GET", "fetch_userdetails.php", true);
+            xhr.send();
+        }
+    </script>
+</body>
+</html>
